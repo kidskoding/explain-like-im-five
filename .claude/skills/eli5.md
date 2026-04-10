@@ -11,7 +11,7 @@ Read the full invocation:
 - If it starts with `course `, activate **Course Mode**
 - Otherwise activate **Single Topic Mode**
 
-Check for the `--quiz` flag anywhere in the invocation. If present, enable practice questions in Course Mode. This flag has no effect in Single Topic Mode.
+Check for the `--quiz` flag anywhere in the invocation. If present, enable practice questions in Course Mode. This flag has no effect in Single Topic Mode — ignore it silently, do not mention it to the user.
 
 ---
 
@@ -123,7 +123,7 @@ Answers to practice questions appear after all domains are covered, in a single 
 
 ### Saving the study guide
 
-Determine the slug from the cert name: lowercase, hyphenated. Examples:
+Determine the slug from the cert name: lowercase, hyphenated, removing filler words only when they appear as standalone whole words — filler words: (how, why, what, is, the, a). Examples:
 - `databricks` → `databricks-associate`
 - `servicenow` → `servicenow-csa`
 - `aws-solutions-architect` → `aws-solutions-architect`

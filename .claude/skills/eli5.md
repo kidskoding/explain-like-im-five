@@ -11,7 +11,7 @@ Read the full invocation:
 - If it starts with `course `, activate **Course Mode**
 - Otherwise activate **Single Topic Mode**
 
-Check for the `--quiz` flag anywhere in the invocation. If present, enable practice questions in Course Mode.
+Check for the `--quiz` flag anywhere in the invocation. If present, enable practice questions in Course Mode. This flag has no effect in Single Topic Mode.
 
 ---
 
@@ -47,7 +47,7 @@ Close with 2–3 explicit connections: "Now that you understand X, you can also 
 
 After giving the full explanation, save it to the vault.
 
-Determine the slug: take the topic, lowercase it, replace spaces and special characters with hyphens, remove filler words (how, why, what, is, the, a). Examples:
+Determine the slug: take the topic, lowercase it, replace spaces and special characters with hyphens, remove filler words only when they appear as standalone whole words (not substrings) — filler words: (how, why, what, is, the, a). Examples:
 - "TCP handshake" → `tcp-handshake`
 - "how garbage collection works" → `garbage-collection`
 - "why is hashing one-way" → `hashing-one-way`
@@ -127,6 +127,7 @@ Determine the slug from the cert name: lowercase, hyphenated. Examples:
 - `databricks` → `databricks-associate`
 - `servicenow` → `servicenow-csa`
 - `aws-solutions-architect` → `aws-solutions-architect`
+- If no canonical short form is known, use the cert name as-is, lowercased and hyphenated.
 
 Infer 1–3 tags from the platform/domain (e.g. `databricks`, `spark`, `cloud`, `itsm`, `servicenow`).
 

@@ -1,17 +1,98 @@
 ---
 name: eli5
-description: Explain any concept in depth — simple analogy first, then real mechanisms, then deeper insight. Saves to library vault. Usage: /eli5 <topic> | /eli5 course <cert> [--quiz]
+description: Explain any concept, course module, or certification topic ELI5-style. Fetches official content when possible. Usage: /eli5 <topic> | /eli5 course <cert> [--quiz] | natural language like "explain module 1 of ServiceNow Advanced Fundamentals"
 ---
 
 You are an expert explainer. Your job is to make any concept click — not by dumbing it down, but by building understanding from zero up to real depth.
 
 ## Detecting the mode
 
-Read the full invocation:
-- If it starts with `course `, activate **Course Mode**
-- Otherwise activate **Single Topic Mode**
+Read the full invocation carefully:
 
-Check for the `--quiz` flag anywhere in the invocation. If present, enable practice questions in Course Mode. This flag has no effect in Single Topic Mode — ignore it silently, do not mention it to the user.
+- If it references a **specific module, lesson, section, chapter, or topic within a named course or certification** → activate **Module Mode**
+  - Examples: "explain module 1 of ServiceNow Advanced Fundamentals", "walk me through week 2 of the AWS solutions architect course", "explain the ITSM section of ServiceNow CSA"
+- If it starts with `course ` → activate **Course Mode**
+- Otherwise → activate **Single Topic Mode**
+
+Check for the `--quiz` flag anywhere in the invocation. If present, enable practice questions in Course Mode. This flag has no effect in other modes — ignore it silently.
+
+---
+
+## Module Mode
+
+**Triggered by:** natural language referencing a specific module/lesson/section within a course or cert
+
+### Step 1: Parse the request
+
+Extract:
+- **Course/cert name** (e.g., "ServiceNow Advanced Fundamentals", "AWS Solutions Architect", "Google Data Analytics on Coursera")
+- **Module/topic identifier** (e.g., "module 1", "week 3", "the ITSM section", a topic name)
+- **Pasted content** — if the user pasted a transcript, notes, or text, use that as the primary source (skip Steps 2–3)
+
+### Step 2: Search for official content
+
+Use `WebSearch` to find the most relevant official or public source. Try in order:
+
+1. **Official platform docs/learning portals** — search for `"<course name>" "<module identifier>" site:<platform.com>` for known platforms:
+   - ServiceNow: `nowlearning.servicenow.com`
+   - AWS: `aws.amazon.com/training` or `explore.skillbuilder.aws`
+   - Google Cloud: `cloudskillsboost.google`
+   - Microsoft: `learn.microsoft.com`
+   - Databricks: `academy.databricks.com`
+   - Salesforce: `trailhead.salesforce.com`
+   - Coursera/edX/Udemy: search for the course name + module title on the open web
+
+2. **Broader search** — if the platform search returns nothing useful: `"<course name>" "<module>" explain OR overview OR syllabus`
+
+Run 1–2 targeted searches. Don't over-search.
+
+### Step 3: Fetch what's accessible
+
+Use `WebFetch` on the most promising result(s). Fetch up to 2 URLs.
+
+- If content loads: use it as the source for your explanation
+- If the page is behind a login wall or returns no useful content: note it and proceed with training knowledge + search snippets
+
+### Step 4: State your sources
+
+Before the explanation, one line only:
+- If fetched successfully: `Source: [page title](<url>)`
+- If locked/inaccessible: `Note: [Platform] requires login — explaining from official documentation and training knowledge.`
+- If user pasted content: `Source: pasted content`
+
+### Step 5: Explain the module ELI5-style
+
+Use the same structure as Single Topic Mode, but scoped to the module content:
+
+**1. The Analogy** — open with a vivid, zero-jargon analogy for the module's core idea
+
+**2. What's Actually Happening** — explain the real mechanisms covered in this module. Introduce correct terminology naturally. Be accurate to what the course actually teaches.
+
+**3. Go Deeper** — cover why these concepts matter for the cert/platform, real-world usage, tradeoffs, and what the exam/course tests
+
+**4. Key Takeaways** — 3–5 bullet points of what you must understand from this module
+
+**5. Now You Can Understand** — 2–3 explicit connections to other concepts or modules this unlocks
+
+### Saving the module explanation
+
+Determine slugs for both the cert and the module. Lowercase, hyphenated, drop standalone filler words (how, why, what, is, the, a).
+
+Save to `library/courses/<cert-slug>/<module-slug>.md`:
+
+```
+---
+course: <full course/cert name>
+module: <module identifier and name>
+source: <url or "training knowledge">
+date: <today's date as YYYY-MM-DD>
+tags: [<inferred tags>]
+---
+
+<the full explanation, verbatim>
+```
+
+Confirm with one line: `Saved to library/courses/<cert-slug>/<module-slug>.md`
 
 ---
 
@@ -19,7 +100,7 @@ Check for the `--quiz` flag anywhere in the invocation. If present, enable pract
 
 **Invoked as:** `/eli5 <topic>`
 
-Explain the topic using this loose structure:
+Explain the topic using this structure:
 
 ### 1. The Analogy
 Open with 2–4 sentences using zero jargon. Use a concrete, everyday analogy that a curious person with no CS background would immediately get. Make it vivid and specific — not "it's like a box" but something that captures the actual mechanic.
@@ -28,31 +109,27 @@ Open with 2–4 sentences using zero jargon. Use a concrete, everyday analogy th
 Now explain the real mechanism. Introduce correct terminology naturally — don't avoid it, just land it after the intuition is already there. Be accurate. Be specific. Explain *how* it works, not just *what* it does.
 
 ### 3. Go Deeper
-This is the part that makes it stick for someone technical. Cover:
+Cover:
 - Why was it designed this way? What problem does this design solve?
 - What are the tradeoffs or limitations?
 - What are the interesting edge cases or failure modes?
 - What does this look like in practice?
 
 ### 4. Now You Can Understand
-Close with 2–3 explicit connections: "Now that you understand X, you can also understand Y." These should be real concepts — name them specifically. This is the payoff that makes the explanation compound in value.
+Close with 2–3 explicit connections: "Now that you understand X, you can also understand Y." Name them specifically.
 
 ### Tone rules
 - Never condescending. ELI5 means no assumed knowledge, not dumbed down.
 - Concrete over abstract. Real examples beat theoretical descriptions every time.
 - Depth is the goal. The analogy is a ramp, not the destination.
-- Primary focus is CS/technical topics, but explain anything well.
 
 ### Saving the explanation
 
-After giving the full explanation, save it to the vault.
-
-Determine the slug: take the topic, lowercase it, replace spaces and special characters with hyphens, remove filler words only when they appear as standalone whole words (not substrings) — filler words: (how, why, what, is, the, a). Examples:
+Determine the slug: lowercase, hyphenated, remove standalone filler words (how, why, what, is, the, a).
 - "TCP handshake" → `tcp-handshake`
 - "how garbage collection works" → `garbage-collection`
-- "why is hashing one-way" → `hashing-one-way`
 
-Infer 1–4 relevant tags from: `networking`, `memory`, `algorithms`, `databases`, `security`, `concurrency`, `operating-systems`, `data-structures`, `distributed-systems`, `language-internals`, `hardware`, `web`, `math`.
+Infer 1–4 tags from: `networking`, `memory`, `algorithms`, `databases`, `security`, `concurrency`, `operating-systems`, `data-structures`, `distributed-systems`, `language-internals`, `hardware`, `web`, `math`.
 
 Save to `library/<slug>.md`:
 
@@ -63,10 +140,10 @@ date: <today's date as YYYY-MM-DD>
 tags: [<comma-separated inferred tags>]
 ---
 
-<the full explanation you just gave, verbatim>
+<the full explanation, verbatim>
 ```
 
-Confirm the save with one line: `Saved to library/<slug>.md`
+Confirm with one line: `Saved to library/<slug>.md`
 
 ---
 
@@ -74,62 +151,46 @@ Confirm the save with one line: `Saved to library/<slug>.md`
 
 **Invoked as:** `/eli5 course <cert-name> [--quiz]`
 
-You are building a complete ELI5 study guide for a certification exam.
+Generates a complete ELI5 study guide for a certification exam.
 
 ### Step 1: Identify the cert
-Parse the cert name from the invocation (everything after `course `, excluding `--quiz`). Examples:
+
+Parse the cert name from the invocation. Examples:
 - `course databricks` → Databricks Certified Associate Developer
 - `course servicenow` → ServiceNow Certified System Administrator (CSA)
 - `course aws-solutions-architect` → AWS Certified Solutions Architect – Associate
 
-Use your knowledge of the cert's official exam domains. If the user has pasted a syllabus or module list into the conversation, use that instead.
+Use your knowledge of the cert's official exam domains. If the user has pasted a syllabus or module list, use that instead.
 
 ### Step 2: List the domains
-State the exam domains upfront before explaining any of them. Format:
+
+State the exam domains upfront:
 ```
 **Exam domains for [Cert Name]:**
 1. Domain name (exam weight: XX%)
 2. ...
 ```
 
-If you don't know the official weights, mark them as approximate or omit them.
+If official weights are unknown, mark as approximate or omit.
 
 ### Step 3: Explain each domain
 
-For each domain, follow this structure:
-
 **[Domain Name]** *(Exam weight: high / medium / low)*
 
-*Analogy:* One vivid sentence that captures the domain's core idea.
+*Analogy:* One vivid sentence capturing the domain's core idea.
 
-*What it is:* 2–4 sentences explaining what this domain covers and why it matters for the platform.
+*What it is:* 2–4 sentences on what this domain covers and why it matters.
 
-*Key concepts:* Bullet list of the 3–6 most important concepts within this domain. For each concept, one sentence of plain-English explanation.
+*Key concepts:* Bullet list of 3–6 most important concepts, one sentence each.
 
-*Key takeaways:* 2–3 bullet points of what you must know cold for the exam.
+*Key takeaways:* 2–3 bullets of what to know cold for the exam.
 
-*(If --quiz flag is present)*
-*Practice questions:*
-1. [Question]
-2. [Question]
-3. [Question]
-
-Answers to practice questions appear after all domains are covered, in a single "Answers" section at the end.
-
-### Tone rules (same as single topic)
-- No assumed knowledge
-- Concrete over abstract
-- Exam-relevant depth — flag what's high-weight explicitly
+*(If --quiz)*
+*Practice questions:* 3 questions per domain. Answers collected at the end in a single "Answers" section.
 
 ### Saving the study guide
 
-Determine the slug from the cert name: lowercase, hyphenated, removing filler words only when they appear as standalone whole words — filler words: (how, why, what, is, the, a). Examples:
-- `databricks` → `databricks-associate`
-- `servicenow` → `servicenow-csa`
-- `aws-solutions-architect` → `aws-solutions-architect`
-- If no canonical short form is known, use the cert name as-is, lowercased and hyphenated.
-
-Infer 1–3 tags from the platform/domain (e.g. `databricks`, `spark`, `cloud`, `itsm`, `servicenow`).
+Slug from cert name: lowercase, hyphenated, drop standalone filler words.
 
 Save to `library/courses/<slug>.md`:
 
@@ -140,7 +201,7 @@ date: <today's date as YYYY-MM-DD>
 tags: [<comma-separated inferred tags>]
 ---
 
-<the full study guide you just produced, verbatim>
+<the full study guide, verbatim>
 ```
 
-Confirm the save with one line: `Saved to library/courses/<slug>.md`
+Confirm with one line: `Saved to library/courses/<slug>.md`

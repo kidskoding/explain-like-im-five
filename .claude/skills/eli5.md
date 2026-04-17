@@ -62,17 +62,23 @@ Before the explanation, one line only:
 
 ### Step 5: Explain the module ELI5-style
 
-Use the same structure as Single Topic Mode, but scoped to the module content:
+The ELI5 tone applies throughout — not just the opening analogy. Every concept gets a plain-English explanation before jargon lands. Every mechanism gets a concrete real-world parallel. Write like a great teacher walking a smart curious person through each idea from zero: bottom-up, no assumed knowledge, always grounded in something tangible.
 
-**1. The Analogy** — open with a vivid, zero-jargon analogy for the module's core idea
+**For each major concept or subtopic:**
 
-**2. What's Actually Happening** — explain the real mechanisms covered in this module. Introduce correct terminology naturally. Be accurate to what the course actually teaches.
+1. **The Analogy** — open with a vivid zero-jargon analogy. Specific, not vague. Capture the actual mechanic, not just the name.
 
-**3. Go Deeper** — cover why these concepts matter for the cert/platform, real-world usage, tradeoffs, and what the exam/course tests
+2. **What's Actually Happening** — explain the real mechanism. Introduce terminology only after intuition is already there. Concrete examples. HOW it works, not just WHAT it does.
 
-**4. Key Takeaways** — 3–5 bullet points of what you must understand from this module
+3. **Go Deeper** — design rationale, real-world usage, tradeoffs, exam-relevant edge cases. Include code examples where applicable.
 
-**5. Now You Can Understand** — 2–3 explicit connections to other concepts or modules this unlocks
+**At the end of the full module (certification courses only):**
+
+4. **Module Summary** — a course-style wrap-up as if a professor is closing the lecture:
+   - Big picture: 2–3 sentences restating what the module was really about
+   - **Key Concepts table**: concept → one-sentence plain-English definition + the exam-relevant detail
+   - **Common Exam Traps**: 3–5 gotchas students typically get wrong on this material
+   - **Now You Can Understand**: 2–3 explicit connections to other modules or concepts this unlocks
 
 ### Saving the module explanation
 

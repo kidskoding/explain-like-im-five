@@ -1,6 +1,6 @@
 # eli5 — Agent Instructions
 
-This project is a Claude Code skill + Go TUI for learning any technical concept explained like you're five.
+This project is a Claude Code skill for learning any technical concept explained like you're five.
 
 ## eli5 Skill
 
@@ -128,6 +128,4 @@ Real mechanism. Correct terminology introduced naturally after the intuition is 
 .claude/skills/eli5.md    — Claude Code skill file
 library/                  — saved explanations vault
 library/courses/          — saved course guides
-cmd/eli5/main.go          — Go TUI entry point
-internal/                 — TUI packages
 ```

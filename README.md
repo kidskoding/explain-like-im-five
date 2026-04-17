@@ -1,6 +1,6 @@
 # explain-like-im-five
 
-A Claude Code skill and TUI for learning anything — ask about a cert module, throw a concept at it, or paste your notes. Explained like you're five, saved to your personal vault.
+A Claude Code skill for learning anything — ask about a cert module, throw a concept at it, or paste your notes. Explained like you're five, saved to your personal vault.
 
 ## Usage
 

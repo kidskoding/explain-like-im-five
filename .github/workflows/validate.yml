@@ -1,0 +1,43 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Symlinks resolve to AGENTS.md
+        run: |
+          set -e
+          fail=0
+          for link in CLAUDE.md GEMINI.md .clinerules .github/copilot-instructions.md; do
+            if [ ! -L "$link" ]; then
+              echo "::error file=$link::expected a symlink, got a regular file (drift risk)"; fail=1; continue
+            fi
+            if [ ! -e "$link" ]; then
+              echo "::error file=$link::broken symlink — target missing"; fail=1; continue
+            fi
+            if ! cmp -s "$link" AGENTS.md; then
+              echo "::error file=$link::symlink does not resolve to AGENTS.md content"; fail=1; continue
+            fi
+            echo "$link -> AGENTS.md OK"
+          done
+          exit $fail
+
+      - name: plugin.json is valid JSON
+        run: |
+          python3 -c "import json; json.load(open('.claude-plugin/plugin.json')); print('plugin.json valid')"
+
+      - name: Required files present
+        run: |
+          set -e
+          for f in AGENTS.md LICENSE .claude-plugin/plugin.json \
+                   .claude/skills/eli5.md .claude/commands/eli5.md \
+                   .codex/prompts/eli5.md .gemini/commands/eli5.toml \
+                   .cursor/commands/eli5.md; do
+            [ -e "$f" ] && echo "$f present" || { echo "::error file=$f::missing"; exit 1; }
+          done

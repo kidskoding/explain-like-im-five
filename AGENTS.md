@@ -1,12 +1,15 @@
 # eli5 — Agent Instructions
 
-This project is a Claude Code skill for learning any technical concept explained like you're five.
+This file is the **single source of truth** for the eli5 behavior across every AI coding agent.
+`CLAUDE.md`, `GEMINI.md`, `.clinerules`, and `.github/copilot-instructions.md` are symlinks to this file.
+Per-agent slash commands (`.claude/commands/eli5.md`, `.codex/prompts/eli5.md`, `.gemini/commands/eli5.toml`,
+`.cursor/commands/eli5.md`) are thin wrappers that defer to the instructions below.
 
-## eli5 Skill
+When the user invokes `/eli5`, says "explain X eli5", or asks you to explain a concept, course module,
+or certification topic ELI5-style, follow these instructions.
 
-When the user invokes `/eli5` or asks you to explain something ELI5-style, follow these instructions:
-
-You are an expert explainer. Your job is to make any concept click — not by dumbing it down, but by building understanding from zero up to real depth.
+You are an expert explainer. Your job is to make any concept click — not by dumbing it down, but by
+building understanding from zero up to real depth.
 
 ## Detecting the mode
 
@@ -34,7 +37,7 @@ Extract:
 
 ### Step 2: Search for official content
 
-Use `WebSearch` to find the most relevant official or public source. Try in order:
+Use web search to find the most relevant official or public source. Try in order:
 
 1. **Official platform docs/learning portals** — search for `"<course name>" "<module identifier>" site:<platform.com>` for known platforms:
    - ServiceNow: `nowlearning.servicenow.com`
@@ -49,9 +52,11 @@ Use `WebSearch` to find the most relevant official or public source. Try in orde
 
 Run 1–2 targeted searches. Don't over-search.
 
+> Web access varies by agent. If your agent has no web fetch/search tool, skip Steps 2–3 and explain from training knowledge + any pasted content, noting that you did so.
+
 ### Step 3: Fetch what's accessible
 
-Use `WebFetch` on the most promising result(s). Fetch up to 2 URLs.
+Use a web fetch tool on the most promising result(s). Fetch up to 2 URLs.
 
 - If content loads: use it as the source for your explanation
 - If the page is behind a login wall or returns no useful content: note it and proceed with training knowledge + search snippets
@@ -65,21 +70,49 @@ Before the explanation, one line only:
 
 ### Step 5: Explain the module ELI5-style
 
-Use the same structure as Single Topic Mode, but scoped to the module content:
+The ELI5 tone applies throughout — not just the opening analogy. Every concept gets a plain-English explanation before jargon lands. Every mechanism gets a concrete real-world parallel. Write like a great teacher walking a smart curious person through each idea from zero: bottom-up, no assumed knowledge, always grounded in something tangible.
 
-**1. The Analogy** — open with a vivid, zero-jargon analogy for the module's core idea
+**For each major concept or subtopic:**
 
-**2. What's Actually Happening** — explain the real mechanisms covered in this module. Introduce correct terminology naturally. Be accurate to what the course actually teaches.
+1. **The Analogy** — open with a vivid zero-jargon analogy. Specific, not vague. Capture the actual mechanic, not just the name.
 
-**3. Go Deeper** — cover why these concepts matter for the cert/platform, real-world usage, tradeoffs, and what the exam/course tests
+2. **What's Actually Happening** — explain the real mechanism. Introduce terminology only after intuition is already there. Concrete examples. HOW it works, not just WHAT it does.
 
-**4. Key Takeaways** — 3–5 bullet points of what you must understand from this module
+3. **Go Deeper** — design rationale, real-world usage, tradeoffs, exam-relevant edge cases. Include code examples where applicable.
 
-**5. Now You Can Understand** — 2–3 explicit connections to other concepts or modules this unlocks
+4. **Key Terms** — table of important vocabulary introduced in this section: term → plain-English definition (one line each).
+
+5. **Summary** — 2–3 bullet points recapping the most important takeaways from this section. What should stick after reading?
+
+**At the end of the full module (certification courses only):**
+
+- **Module Summary** — a course-style wrap-up as if a professor is closing the lecture:
+  - Big picture: 2–3 sentences restating what the module was really about
+  - **Key Concepts table**: concept → one-sentence plain-English definition + the exam-relevant detail
+  - **Common Exam Traps**: 3–5 gotchas students typically get wrong on this material
+  - **Now You Can Understand**: 2–3 explicit connections to other modules or concepts this unlocks
 
 ### Saving the module explanation
 
-Save to `library/courses/<cert-slug>/<module-slug>.md` with front matter: course, module, source, date, tags.
+First ask the user whether to save: `Save this to the library? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
+
+Determine slugs for both the cert and the module. Lowercase, hyphenated, drop standalone filler words (how, why, what, is, the, a).
+
+Save to `library/courses/<cert-slug>/<module-slug>/<module-slug>.md` (relative to the current project root, i.e. the working directory — create the dirs if they don't exist). The `<module-slug>/` directory holds this module's overview and any per-topic files saved later:
+
+```
+---
+course: <full course/cert name>
+module: <module identifier and name>
+source: <url or "training knowledge">
+date: <today's date as YYYY-MM-DD>
+tags: [<inferred tags>]
+---
+
+<the full explanation, verbatim>
+```
+
+Confirm with one line: `Saved to library/courses/<cert-slug>/<module-slug>/<module-slug>.md`
 
 ---
 
@@ -90,23 +123,49 @@ Save to `library/courses/<cert-slug>/<module-slug>.md` with front matter: course
 Explain the topic using this structure:
 
 ### 1. The Analogy
-Open with 2–4 sentences using zero jargon. Vivid, concrete, captures the actual mechanic.
+Open with 2–4 sentences using zero jargon. Use a concrete, everyday analogy that a curious person with no CS background would immediately get. Make it vivid and specific — not "it's like a box" but something that captures the actual mechanic.
 
 ### 2. What's Actually Happening
-Real mechanism. Correct terminology introduced naturally after the intuition is there.
+Now explain the real mechanism. Introduce correct terminology naturally — don't avoid it, just land it after the intuition is already there. Be accurate. Be specific. Explain *how* it works, not just *what* it does.
 
 ### 3. Go Deeper
-- Why was it designed this way?
-- Tradeoffs or limitations?
-- Interesting edge cases or failure modes?
+Cover:
+- Why was it designed this way? What problem does this design solve?
+- What are the tradeoffs or limitations?
+- What are the interesting edge cases or failure modes?
 - What does this look like in practice?
 
 ### 4. Now You Can Understand
-2–3 explicit connections to related concepts. Name them specifically.
+Close with 2–3 explicit connections: "Now that you understand X, you can also understand Y." Name them specifically.
 
-**Tone:** Never condescending. Concrete over abstract. Depth is the goal — the analogy is a ramp, not the destination.
+### Tone rules
+- Never condescending. ELI5 means no assumed knowledge, not dumbed down.
+- Concrete over abstract. Real examples beat theoretical descriptions every time.
+- Depth is the goal. The analogy is a ramp, not the destination.
 
-**Save to** `library/<slug>.md` with front matter: topic, date, tags.
+### Saving the explanation
+
+First ask the user whether to save: `Save this to the library? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
+
+Determine the slug: lowercase, hyphenated, remove standalone filler words (how, why, what, is, the, a).
+- "TCP handshake" → `tcp-handshake`
+- "how garbage collection works" → `garbage-collection`
+
+Infer 1–4 tags from: `networking`, `memory`, `algorithms`, `databases`, `security`, `concurrency`, `operating-systems`, `data-structures`, `distributed-systems`, `language-internals`, `hardware`, `web`, `math`.
+
+Save to `library/<slug>.md` (relative to the current project root / working directory — create `library/` if it doesn't exist):
+
+```
+---
+topic: <human-readable topic name>
+date: <today's date as YYYY-MM-DD>
+tags: [<comma-separated inferred tags>]
+---
+
+<the full explanation, verbatim>
+```
+
+Confirm with one line: `Saved to library/<slug>.md`
 
 ---
 
@@ -114,18 +173,107 @@ Real mechanism. Correct terminology introduced naturally after the intuition is 
 
 **Invoked as:** `/eli5 course <cert-name> [--quiz]`
 
-1. Identify the cert and list exam domains upfront with weights
-2. For each domain: Analogy, What it is, Key concepts, Key takeaways
-3. If `--quiz`: 3 practice questions per domain, answers at end
+Generates a complete ELI5 study guide for a certification exam.
 
-**Save to** `library/courses/<slug>.md` with front matter: course, date, tags.
+### Step 1: Identify the cert
+
+Parse the cert name from the invocation. Examples:
+- `course databricks` → Databricks Certified Associate Developer
+- `course servicenow` → ServiceNow Certified System Administrator (CSA)
+- `course aws-solutions-architect` → AWS Certified Solutions Architect – Associate
+
+Use your knowledge of the cert's official exam domains. If the user has pasted a syllabus or module list, use that instead.
+
+### Step 2: List the domains
+
+State the exam domains upfront:
+```
+**Exam domains for [Cert Name]:**
+1. Domain name (exam weight: XX%)
+2. ...
+```
+
+If official weights are unknown, mark as approximate or omit.
+
+### Step 3: Explain each domain
+
+**[Domain Name]** *(Exam weight: high / medium / low)*
+
+*Analogy:* One vivid sentence capturing the domain's core idea.
+
+*What it is:* 2–4 sentences on what this domain covers and why it matters.
+
+*Key concepts:* Bullet list of 3–6 most important concepts, one sentence each.
+
+*Key takeaways:* 2–3 bullets of what to know cold for the exam.
+
+*(If --quiz)*
+*Practice questions:* 3 questions per domain. Answers collected at the end in a single "Answers" section.
+
+### Saving the study guide
+
+First ask the user whether to save: `Save this to the library? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
+
+Slug from cert name: lowercase, hyphenated, drop standalone filler words.
+
+Save to `library/courses/<cert-slug>/study-guide.md` (relative to the current project root / working directory — create the dirs if they don't exist):
+
+```
+---
+course: <full cert name>
+date: <today's date as YYYY-MM-DD>
+tags: [<comma-separated inferred tags>]
+---
+
+<the full study guide, verbatim>
+```
+
+Confirm with one line: `Saved to library/courses/<cert-slug>/study-guide.md`
+
+---
+
+## Notion Integration
+
+When the user asks to save notes to Notion (e.g. "put this in my Notion", "write to Notion"), and your agent
+has Notion MCP tools available:
+
+1. Search for the target page using the Notion search tool
+2. Fetch the page to confirm structure
+3. Create sub-pages under the target page using the Notion create-pages tool
+
+If no Notion tools are available, tell the user and save to the local `library/` instead.
+
+### Course page naming
+
+When creating multiple course sub-pages, prefix each title with an emoji number:
+
+| Course # | Prefix |
+|----------|--------|
+| 1 | 1️⃣ |
+| 2 | 2️⃣ |
+| 3 | 3️⃣ |
+| 4 | 4️⃣ |
+| 5 | 5️⃣ |
+
+Example: `1️⃣ Course 1: Get Started Quickly with Jira`
+
+Each course = one sub-page. Lessons = `##` sections within that page.
 
 ---
 
 ## Project Structure
 
 ```
-.claude/skills/eli5.md    — Claude Code skill file
-library/                  — saved explanations vault
-library/courses/          — saved course guides
+AGENTS.md                       — single source of truth (this file)
+CLAUDE.md                       — symlink → AGENTS.md (Claude Code)
+GEMINI.md                       — symlink → AGENTS.md (Gemini CLI)
+.clinerules                     — symlink → AGENTS.md (Cline)
+.github/copilot-instructions.md — symlink → AGENTS.md (GitHub Copilot)
+.claude/skills/eli5.md          — Claude Code skill (discovery + defers here)
+.claude/commands/eli5.md        — Claude Code slash command
+.codex/prompts/eli5.md          — Codex prompt
+.gemini/commands/eli5.toml      — Gemini CLI command
+.cursor/commands/eli5.md        — Cursor command
+library/                        — saved explanations vault
+library/courses/                — saved course guides
 ```

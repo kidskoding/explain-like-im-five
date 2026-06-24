@@ -1,0 +1,13 @@
+{
+  "name": "eli5",
+  "version": "0.1.0",
+  "description": "ELI5 explainer for topics, course modules, and certification study guides. Explains anything from zero up to real depth and saves it to a local vault.",
+  "author": {
+    "name": "Anirudh Konidala",
+    "url": "https://github.com/kidskoding"
+  },
+  "homepage": "https://github.com/kidskoding/explain-like-im-five",
+  "repository": "https://github.com/kidskoding/explain-like-im-five",
+  "license": "MIT",
+  "keywords": ["eli5", "explain", "learning", "certification", "study-guide", "education"]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "kidskoding",
+  "owner": {
+    "name": "Anirudh Konidala",
+    "url": "https://github.com/kidskoding"
+  },
+  "plugins": [
+    {
+      "name": "eli5",
+      "source": "./",
+      "description": "ELI5 explainer for topics, course modules, and certification study guides."
+    }
+  ]
+}

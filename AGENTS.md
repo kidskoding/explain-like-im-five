@@ -247,36 +247,46 @@ opts in to saving, run this destination flow to decide *where* and in *what form
 ### Step 1 — Pick destination & format
 
 If the user already named a destination or format in their request ("save to Word", "put it in Notion",
-"save to ~/notes"), skip the prompt and honor it. Otherwise ask once:
+"save to ~/notes"), skip the prompt and honor it.
 
-```
-Where should I save this?
-  1. This folder — where eli5 is running  (recommended)
-  2. ~/.claude/eli5-notes/
-  3. A path I'll give you
-  4. Microsoft Word document (.docx)
-  5. Notion
-(press enter for 1)
-```
+Otherwise present the choice using your agent's **native interactive multiple-choice prompt** — the
+structured option picker, not a plain-text question. In Claude Code this is the `AskUserQuestion` tool;
+other agents have an equivalent structured-choice mechanism. Ask one question, header `Save to`, with
+these options (list the recommended one first and mark it):
 
-- **No answer / blank / enter → option 1** (current working directory).
-- Options 1–3 → save as a **markdown file** (Step 2).
-- Option 4 → **Word document** (Step 3).
-- Option 5 → **Notion** (see the Notion Integration section below).
+| Option label | Meaning |
+|---|---|
+| `This folder (Recommended)` | current working directory where eli5 is running |
+| `~/.claude/eli5-notes/` | global eli5 stash across projects |
+| `Microsoft Word (.docx)` | export as a Word document |
+| `Notion` | save into Notion via MCP tools |
 
-### Step 2 — Markdown file (options 1–3)
+The picker always offers its own "Other" / free-text escape — the user types a custom save path there.
+Treat that free-text answer as a custom directory.
 
-Resolve the base directory:
-- Option 1 → current working directory (`.`)
-- Option 2 → `~/.claude/eli5-notes/` (expand `~`; create it if missing)
-- Option 3 → the path the user gives (expand `~`; create it if missing)
+Route the answer:
+- **`This folder`** (also the default if the user dismisses without choosing) → markdown, current dir (Step 2)
+- **`~/.claude/eli5-notes/`** → markdown there (Step 2)
+- **custom path** (via "Other") → markdown there (Step 2)
+- **`Microsoft Word (.docx)`** → Word document (Step 3)
+- **`Notion`** → see the Notion Integration section below
+
+> If your agent has no structured-choice tool, fall back to a plain numbered text prompt and default to
+> the current folder on a blank answer.
+
+### Step 2 — Markdown file
+
+Resolve the base directory from the chosen option:
+- `This folder` → current working directory (`.`)
+- `~/.claude/eli5-notes/` → expand `~`; create it if missing
+- custom path (via "Other") → expand `~`; create it if missing
 
 Write the markdown (frontmatter + explanation) to `<base>/<default-relative-path>`, creating any
 missing directories. Confirm with one line: `Saved to <full path>`.
 
-### Step 3 — Word document (.docx, option 4)
+### Step 3 — Word document (.docx)
 
-Ask which folder to save into if not already known — same default as Step 2 (current path on blank).
+Ask which folder to save into if not already known — default to the current folder.
 Build the `.docx` from the same content (the frontmatter becomes a plain metadata block at the top of
 the document, not raw YAML), named `<slug>.docx`:
 

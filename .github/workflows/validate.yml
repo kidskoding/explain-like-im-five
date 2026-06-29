@@ -32,11 +32,33 @@ jobs:
         run: |
           python3 -c "import json; json.load(open('.claude-plugin/plugin.json')); print('plugin.json valid')"
 
+      - name: marketplace.json is valid JSON
+        run: |
+          python3 -c "import json; json.load(open('.claude-plugin/marketplace.json')); print('marketplace.json valid')"
+
+      - name: Skill is in directory form (skills/<name>/SKILL.md)
+        run: |
+          set -e
+          [ -f skills/eli5/SKILL.md ] || { echo "::error::skills/eli5/SKILL.md missing — plugin skills must be skills/<name>/SKILL.md"; exit 1; }
+          [ -L .claude/skills/eli5/SKILL.md ] && [ -e .claude/skills/eli5/SKILL.md ] \
+            || { echo "::error::.claude/skills/eli5/SKILL.md must be a resolving symlink to skills/eli5/SKILL.md"; exit 1; }
+          # frontmatter must declare a name + description so the skill registers and auto-triggers
+          grep -q '^name:' skills/eli5/SKILL.md || { echo "::error::SKILL.md missing 'name:' frontmatter"; exit 1; }
+          grep -q '^description:' skills/eli5/SKILL.md || { echo "::error::SKILL.md missing 'description:' frontmatter"; exit 1; }
+          echo "skill shape OK"
+
+      - name: No stray flat skill / colliding command
+        run: |
+          set -e
+          [ -e .claude/skills/eli5.md ] && { echo "::error::flat .claude/skills/eli5.md is not discovered as a skill — use skills/eli5/SKILL.md"; exit 1; } || true
+          [ -e .claude/commands/eli5.md ] && { echo "::error::.claude/commands/eli5.md collides with the eli5 skill's /eli5 — remove it"; exit 1; } || true
+          echo "no collisions"
+
       - name: Required files present
         run: |
           set -e
-          for f in AGENTS.md LICENSE .claude-plugin/plugin.json \
-                   .claude/skills/eli5.md .claude/commands/eli5.md \
+          for f in AGENTS.md LICENSE .claude-plugin/plugin.json .claude-plugin/marketplace.json \
+                   skills/eli5/SKILL.md .claude/skills/eli5/SKILL.md \
                    .codex/prompts/eli5.md .gemini/commands/eli5.toml \
                    .cursor/commands/eli5.md; do
             [ -e "$f" ] && echo "$f present" || { echo "::error file=$f::missing"; exit 1; }

@@ -33,7 +33,15 @@ walk me through the change management section of ITIL 4
 
 ## Vault
 
-Explanations are saved to `library/`. Course guides go to `library/courses/`. Module explanations go to `library/courses/<cert>/<module>.md`. All files are plain markdown — grep, browse, or share them freely.
+When you save, eli5 asks **where** and in **what format**:
+
+- **This folder** (where eli5 is running) — the default; press enter to accept
+- **`~/.claude/eli5-notes/`** — a global stash across projects
+- **A path you provide**
+- **Microsoft Word** (`.docx`, via pandoc or python-docx)
+- **Notion** (via the Notion MCP tools)
+
+For the markdown options, explanations land in `library/`, course guides in `library/courses/`, and module explanations in `library/courses/<cert>/<module>.md` under the chosen base. All markdown files — grep, browse, or share them freely.
 
 ## Works with any AI coding agent
 
@@ -41,7 +49,7 @@ The eli5 behavior is defined once in [`AGENTS.md`](AGENTS.md) — the single sou
 
 | Agent | Instructions | Slash command |
 |-------|--------------|---------------|
-| Claude Code | `CLAUDE.md` → `AGENTS.md` | `.claude/skills/eli5.md`, `.claude/commands/eli5.md` |
+| Claude Code | `CLAUDE.md` → `AGENTS.md` | `skills/eli5/SKILL.md` (`.claude/skills/eli5/SKILL.md` symlinks to it) |
 | Codex | `AGENTS.md` (native) | `.codex/prompts/eli5.md` |
 | Gemini CLI | `GEMINI.md` → `AGENTS.md` | `.gemini/commands/eli5.toml` |
 | Cursor | `AGENTS.md` (native) | `.cursor/commands/eli5.md` |
@@ -53,6 +61,15 @@ The eli5 behavior is defined once in [`AGENTS.md`](AGENTS.md) — the single sou
 
 ## Install
 
-Install the whole repo as a project (or as a Claude Code plugin) so `AGENTS.md` ships alongside the command files — the commands defer to it.
+**As a Claude Code plugin (recommended):**
 
-For a global Claude Code skill across all projects, copy the repo's `.claude/skills/eli5.md` **and** `AGENTS.md` into `~/.claude/` (the skill reads `AGENTS.md`).
+```
+/plugin marketplace add kidskoding/explain-like-im-five
+/plugin install eli5
+```
+
+Then use `/eli5` in any project, or just ask naturally.
+
+**As a project:** clone the repo and open it as your working directory. Claude Code reads `.claude/skills/`, and Codex/Cursor/Windsurf read `AGENTS.md` natively. `AGENTS.md` ships alongside, so every agent's entry point can defer to it.
+
+**As a global Claude Code skill:** copy `skills/eli5/` **and** `AGENTS.md` into `~/.claude/skills/` and `~/.claude/` respectively (the skill reads `AGENTS.md`).

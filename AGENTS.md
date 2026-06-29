@@ -2,8 +2,8 @@
 
 This file is the **single source of truth** for the eli5 behavior across every AI coding agent.
 `CLAUDE.md`, `GEMINI.md`, `.clinerules`, and `.github/copilot-instructions.md` are symlinks to this file.
-Per-agent slash commands (`.claude/commands/eli5.md`, `.codex/prompts/eli5.md`, `.gemini/commands/eli5.toml`,
-`.cursor/commands/eli5.md`) are thin wrappers that defer to the instructions below.
+Per-agent entry points (`skills/eli5/SKILL.md` for Claude Code, `.codex/prompts/eli5.md`,
+`.gemini/commands/eli5.toml`, `.cursor/commands/eli5.md`) are thin wrappers that defer to the instructions below.
 
 When the user invokes `/eli5`, says "explain X eli5", or asks you to explain a concept, course module,
 or certification topic ELI5-style, follow these instructions.
@@ -94,11 +94,13 @@ The ELI5 tone applies throughout — not just the opening analogy. Every concept
 
 ### Saving the module explanation
 
-First ask the user whether to save: `Save this to the library? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
+First ask the user whether to save: `Save this? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
 
 Determine slugs for both the cert and the module. Lowercase, hyphenated, drop standalone filler words (how, why, what, is, the, a).
 
-Save to `library/courses/<cert-slug>/<module-slug>/<module-slug>.md` (relative to the current project root, i.e. the working directory — create the dirs if they don't exist). The `<module-slug>/` directory holds this module's overview and any per-topic files saved later:
+**Default relative path:** `library/courses/<cert-slug>/<module-slug>/<module-slug>.md`. The `<module-slug>/` directory holds this module's overview and any per-topic files saved later.
+
+**Frontmatter:**
 
 ```
 ---
@@ -112,7 +114,7 @@ tags: [<inferred tags>]
 <the full explanation, verbatim>
 ```
 
-Confirm with one line: `Saved to library/courses/<cert-slug>/<module-slug>/<module-slug>.md`
+Then follow **[Saving notes](#saving-notes)** for destination and format.
 
 ---
 
@@ -145,7 +147,7 @@ Close with 2–3 explicit connections: "Now that you understand X, you can also 
 
 ### Saving the explanation
 
-First ask the user whether to save: `Save this to the library? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
+First ask the user whether to save: `Save this? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
 
 Determine the slug: lowercase, hyphenated, remove standalone filler words (how, why, what, is, the, a).
 - "TCP handshake" → `tcp-handshake`
@@ -153,7 +155,9 @@ Determine the slug: lowercase, hyphenated, remove standalone filler words (how, 
 
 Infer 1–4 tags from: `networking`, `memory`, `algorithms`, `databases`, `security`, `concurrency`, `operating-systems`, `data-structures`, `distributed-systems`, `language-internals`, `hardware`, `web`, `math`.
 
-Save to `library/<slug>.md` (relative to the current project root / working directory — create `library/` if it doesn't exist):
+**Default relative path:** `library/<slug>.md`.
+
+**Frontmatter:**
 
 ```
 ---
@@ -165,7 +169,7 @@ tags: [<comma-separated inferred tags>]
 <the full explanation, verbatim>
 ```
 
-Confirm with one line: `Saved to library/<slug>.md`
+Then follow **[Saving notes](#saving-notes)** for destination and format.
 
 ---
 
@@ -212,11 +216,13 @@ If official weights are unknown, mark as approximate or omit.
 
 ### Saving the study guide
 
-First ask the user whether to save: `Save this to the library? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
+First ask the user whether to save: `Save this? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
 
 Slug from cert name: lowercase, hyphenated, drop standalone filler words.
 
-Save to `library/courses/<cert-slug>/study-guide.md` (relative to the current project root / working directory — create the dirs if they don't exist):
+**Default relative path:** `library/courses/<cert-slug>/study-guide.md`.
+
+**Frontmatter:**
 
 ```
 ---
@@ -228,14 +234,67 @@ tags: [<comma-separated inferred tags>]
 <the full study guide, verbatim>
 ```
 
-Confirm with one line: `Saved to library/courses/<cert-slug>/study-guide.md`
+Then follow **[Saving notes](#saving-notes)** for destination and format.
+
+---
+
+## Saving notes
+
+Every mode that produces an explanation can save it. Each mode's "Saving the …" subsection defines
+the **slug**, **frontmatter**, and **default relative path** (e.g. `library/<slug>.md`). After the user
+opts in to saving, run this destination flow to decide *where* and in *what format*.
+
+### Step 1 — Pick destination & format
+
+If the user already named a destination or format in their request ("save to Word", "put it in Notion",
+"save to ~/notes"), skip the prompt and honor it. Otherwise ask once:
+
+```
+Where should I save this?
+  1. This folder — where eli5 is running  (recommended)
+  2. ~/.claude/eli5-notes/
+  3. A path I'll give you
+  4. Microsoft Word document (.docx)
+  5. Notion
+(press enter for 1)
+```
+
+- **No answer / blank / enter → option 1** (current working directory).
+- Options 1–3 → save as a **markdown file** (Step 2).
+- Option 4 → **Word document** (Step 3).
+- Option 5 → **Notion** (see the Notion Integration section below).
+
+### Step 2 — Markdown file (options 1–3)
+
+Resolve the base directory:
+- Option 1 → current working directory (`.`)
+- Option 2 → `~/.claude/eli5-notes/` (expand `~`; create it if missing)
+- Option 3 → the path the user gives (expand `~`; create it if missing)
+
+Write the markdown (frontmatter + explanation) to `<base>/<default-relative-path>`, creating any
+missing directories. Confirm with one line: `Saved to <full path>`.
+
+### Step 3 — Word document (.docx, option 4)
+
+Ask which folder to save into if not already known — same default as Step 2 (current path on blank).
+Build the `.docx` from the same content (the frontmatter becomes a plain metadata block at the top of
+the document, not raw YAML), named `<slug>.docx`:
+
+1. If `pandoc` is available, write the markdown to a temp file and run
+   `pandoc <tmp>.md -o <base>/<slug>.docx`.
+2. Else if Python with `python-docx` is available, build the document programmatically (headings,
+   paragraphs, tables from the markdown).
+3. Else tell the user neither `pandoc` nor `python-docx` is installed, and offer to install one or fall
+   back to saving markdown (Step 2).
+
+Confirm with one line: `Saved to <base>/<slug>.docx`.
 
 ---
 
 ## Notion Integration
 
-When the user asks to save notes to Notion (e.g. "put this in my Notion", "write to Notion"), and your agent
-has Notion MCP tools available:
+When the user asks to save notes to Notion (e.g. "put this in my Notion", "write to Notion", or picks
+option 5 above), and your agent has Notion MCP tools available:
 
 1. Search for the target page using the Notion search tool
 2. Fetch the page to confirm structure
@@ -269,11 +328,17 @@ CLAUDE.md                       — symlink → AGENTS.md (Claude Code)
 GEMINI.md                       — symlink → AGENTS.md (Gemini CLI)
 .clinerules                     — symlink → AGENTS.md (Cline)
 .github/copilot-instructions.md — symlink → AGENTS.md (GitHub Copilot)
-.claude/skills/eli5.md          — Claude Code skill (discovery + defers here)
-.claude/commands/eli5.md        — Claude Code slash command
+.claude-plugin/plugin.json      — Claude Code plugin manifest
+.claude-plugin/marketplace.json — Claude Code marketplace entry
+skills/eli5/SKILL.md            — Claude Code skill (plugin install; defers here)
+.claude/skills/eli5/SKILL.md    — symlink → skills/eli5/SKILL.md (project mode)
 .codex/prompts/eli5.md          — Codex prompt
 .gemini/commands/eli5.toml      — Gemini CLI command
 .cursor/commands/eli5.md        — Cursor command
 library/                        — saved explanations vault
 library/courses/                — saved course guides
 ```
+
+> **Why both `skills/` and `.claude/skills/`:** when installed as a plugin, Claude Code discovers
+> skills from `skills/` at the plugin root; when this repo is your working directory, it reads
+> `.claude/skills/`. The latter is a symlink to the former, so there is one real skill file.

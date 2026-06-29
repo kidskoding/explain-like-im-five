@@ -249,7 +249,7 @@ prompt** (in Claude Code, the `AskUserQuestion` tool). One question, header `Nex
 
 | Option label | What it does |
 |---|---|
-| `Save it (Recommended)` | go to Step 2 to pick a destination |
+| `Save it` | go to Step 2 to pick a destination |
 | `Improve it` | revise the explanation, then return here |
 | `No, I'm done` | stop — do not save |
 

@@ -1,0 +1,5 @@
+# GitHub Linguist overrides.
+# This repo is prose — Markdown instruction files — which Linguist normally
+# excludes from the language bar. Force it to count and surface as MDX.
+*.md linguist-detectable=true
+*.md linguist-language=MDX

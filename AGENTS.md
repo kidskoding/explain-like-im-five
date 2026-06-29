@@ -98,9 +98,9 @@ Then run the **[Saving notes](#saving-notes)** flow — it offers to save, impro
 
 Determine slugs for both the cert and the module. Lowercase, hyphenated, drop standalone filler words (how, why, what, is, the, a).
 
-**Default relative path:** `library/courses/<cert-slug>/<module-slug>/<module-slug>.md`. The `<module-slug>/` directory holds this module's overview and any per-topic files saved later.
+**Layout:** split into a parent overview + one subpage per concept/subtopic — see **[Pages and subpages](#pages-and-subpages)**. The parent lives at `library/courses/<cert-slug>/<module-slug>/<module-slug>.md`; each subtopic is a sibling `library/courses/<cert-slug>/<module-slug>/<subtopic-slug>.md`.
 
-**Frontmatter:**
+**Frontmatter** (parent overview):
 
 ```
 ---
@@ -111,8 +111,10 @@ date: <today's date as YYYY-MM-DD>
 tags: [<inferred tags>]
 ---
 
-<the full explanation, verbatim>
+<intro + Contents list linking to each subtopic + Module Summary wrap-up>
 ```
+
+**Frontmatter** (each subtopic subpage): same fields plus `parent: <module-slug>.md`, body = that one subtopic's full ELI5 explanation + a back-link to the overview.
 
 
 ---
@@ -218,9 +220,9 @@ Then run the **[Saving notes](#saving-notes)** flow — it offers to save, impro
 
 Slug from cert name: lowercase, hyphenated, drop standalone filler words.
 
-**Default relative path:** `library/courses/<cert-slug>/study-guide.md`.
+**Layout:** split into a parent study-guide + one subpage per exam domain — see **[Pages and subpages](#pages-and-subpages)**. The parent lives at `library/courses/<cert-slug>/study-guide.md`; each domain is a sibling `library/courses/<cert-slug>/<domain-slug>.md`.
 
-**Frontmatter:**
+**Frontmatter** (parent study-guide):
 
 ```
 ---
@@ -229,9 +231,73 @@ date: <today's date as YYYY-MM-DD>
 tags: [<comma-separated inferred tags>]
 ---
 
-<the full study guide, verbatim>
+<intro + domains list linking to each domain subpage>
 ```
 
+**Frontmatter** (each domain subpage): same fields plus `parent: study-guide.md`, body = that one domain's full ELI5 explanation + a back-link to the study-guide.
+
+
+---
+
+## Pages and subpages
+
+Don't cram a long explanation onto one giant page — but **only split when it genuinely helps.** Splitting
+is for content that really has several substantial, standalone sections. If it doesn't, keep it on one
+page. Forcing subpages onto small content makes it *harder* to read, not easier.
+
+**Split only when applicable:**
+
+- **Single Topic Mode** → **one page, always.** Its four sections are short and belong together.
+- **Module Mode** → split into **parent overview + one subpage per concept** *only if there are 2+
+  substantial concepts.* A module covering a single idea stays one page.
+- **Course Mode** → split into **parent study-guide + one subpage per domain** *only if there are 2+
+  domains worth a page each.* Otherwise one page.
+
+When in doubt, or when sections are short, **prefer one page.** Fold any genuinely tiny section into the
+parent instead of making a thin subpage.
+
+**ELI5 convention applies to everything — every page, parent and child, single or split.** The whole
+point is that it stays simple and easy to understand: open with a vivid, concrete analogy; explain in
+plain English before any jargon lands; ground every mechanism in something tangible; never assume prior
+knowledge. A subpage is a complete little explanation in its own right, held to the exact same standard —
+never a bare fragment, never denser just because it's "deeper in."
+
+**Parent overview page** holds:
+- the `Source:`/`Note:` line and the big-picture framing
+- a **Contents** list linking to each subpage
+- the Module/Course summary wrap-up (the closing "professor" recap)
+
+**Each subpage** holds one subtopic/domain in the standard ELI5 structure (Analogy → What's Actually
+Happening → Go Deeper → Key Terms → Summary), its own frontmatter, and a link back to the parent.
+
+### Markdown layout
+
+Module:
+```
+library/courses/<cert-slug>/<module-slug>/
+  <module-slug>.md          ← parent overview (Contents links to each subtopic)
+  <subtopic-1-slug>.md
+  <subtopic-2-slug>.md
+```
+Course:
+```
+library/courses/<cert-slug>/
+  study-guide.md            ← parent overview (Contents links to each domain)
+  <domain-1-slug>.md
+  <domain-2-slug>.md
+```
+Link parent → child: `- [Subtopic name](<subtopic-slug>.md)`. Link child → parent:
+`[← Back to overview](<module-slug>.md)`. Give each subpage frontmatter a `parent: <parent-slug>.md` line.
+
+### Notion layout
+
+Parent page = the overview. Each subtopic/domain becomes a **child page created under it** (call
+notion-create-pages with the parent page as the target). Keep the emoji-number prefixes for course pages
+per the Notion Integration section. The same ELI5-per-page rule holds — every child page is a full
+mini-explanation.
+
+The Word (.docx) option stays a single document (Word handles long docs with headings); use its heading
+levels for sections instead of separate files.
 
 ---
 
@@ -240,7 +306,8 @@ tags: [<comma-separated inferred tags>]
 Every mode that produces an explanation can save it. Each mode's "Saving the …" subsection defines
 the **slug**, **frontmatter**, and **default relative path** (e.g. `library/<slug>.md`). After the
 explanation, run this flow to decide whether to save, improve, or skip — and if saving, *where* and in
-*what format*.
+*what format*. For multi-section content, lay it out as a parent + subpages per
+**[Pages and subpages](#pages-and-subpages)**.
 
 ### Step 1 — Save, improve, or skip
 

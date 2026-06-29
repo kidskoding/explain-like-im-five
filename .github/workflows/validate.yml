@@ -40,25 +40,33 @@ jobs:
         run: |
           set -e
           [ -f skills/eli5/SKILL.md ] || { echo "::error::skills/eli5/SKILL.md missing — plugin skills must be skills/<name>/SKILL.md"; exit 1; }
-          [ -L .claude/skills/eli5/SKILL.md ] && [ -e .claude/skills/eli5/SKILL.md ] \
-            || { echo "::error::.claude/skills/eli5/SKILL.md must be a resolving symlink to skills/eli5/SKILL.md"; exit 1; }
           # frontmatter must declare a name + description so the skill registers and auto-triggers
           grep -q '^name:' skills/eli5/SKILL.md || { echo "::error::SKILL.md missing 'name:' frontmatter"; exit 1; }
           grep -q '^description:' skills/eli5/SKILL.md || { echo "::error::SKILL.md missing 'description:' frontmatter"; exit 1; }
+          # the shipped skill must point at the plugin-root AGENTS.md, not a sibling
+          grep -q 'CLAUDE_PLUGIN_ROOT' skills/eli5/SKILL.md || { echo "::error::SKILL.md must reference \${CLAUDE_PLUGIN_ROOT}/AGENTS.md for plugin installs"; exit 1; }
           echo "skill shape OK"
+
+      - name: Plugin ships no .claude/ directory (loader ignores it)
+        run: |
+          set -e
+          if [ -e .claude ]; then
+            echo "::error::.claude/ must not ship — the plugin loader reads skills/ at the root and ignores .claude/ (would double-register in project mode)"; exit 1
+          fi
+          echo "no .claude/ in repo"
 
       - name: No stray flat skill / colliding command
         run: |
           set -e
-          [ -e .claude/skills/eli5.md ] && { echo "::error::flat .claude/skills/eli5.md is not discovered as a skill — use skills/eli5/SKILL.md"; exit 1; } || true
-          [ -e .claude/commands/eli5.md ] && { echo "::error::.claude/commands/eli5.md collides with the eli5 skill's /eli5 — remove it"; exit 1; } || true
+          [ -e skills/eli5.md ] && { echo "::error::flat skills/eli5.md is not discovered as a skill — use skills/eli5/SKILL.md"; exit 1; } || true
+          [ -e commands/eli5.md ] && { echo "::error::legacy commands/eli5.md collides with the eli5 skill's /eli5 — remove it"; exit 1; } || true
           echo "no collisions"
 
       - name: Required files present
         run: |
           set -e
           for f in AGENTS.md LICENSE .claude-plugin/plugin.json .claude-plugin/marketplace.json \
-                   skills/eli5/SKILL.md .claude/skills/eli5/SKILL.md \
+                   skills/eli5/SKILL.md \
                    .codex/prompts/eli5.md .gemini/commands/eli5.toml \
                    .cursor/commands/eli5.md; do
             [ -e "$f" ] && echo "$f present" || { echo "::error file=$f::missing"; exit 1; }

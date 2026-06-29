@@ -1,1 +1,0 @@
-../../../skills/eli5/SKILL.md

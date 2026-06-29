@@ -49,7 +49,7 @@ The eli5 behavior is defined once in [`AGENTS.md`](AGENTS.md) — the single sou
 
 | Agent | Instructions | Slash command |
 |-------|--------------|---------------|
-| Claude Code | `CLAUDE.md` → `AGENTS.md` | `skills/eli5/SKILL.md` (`.claude/skills/eli5/SKILL.md` symlinks to it) |
+| Claude Code | `CLAUDE.md` → `AGENTS.md` | `skills/eli5/SKILL.md` |
 | Codex | `AGENTS.md` (native) | `.codex/prompts/eli5.md` |
 | Gemini CLI | `GEMINI.md` → `AGENTS.md` | `.gemini/commands/eli5.toml` |
 | Cursor | `AGENTS.md` (native) | `.cursor/commands/eli5.md` |
@@ -70,6 +70,6 @@ The eli5 behavior is defined once in [`AGENTS.md`](AGENTS.md) — the single sou
 
 Then use `/eli5` in any project, or just ask naturally.
 
-**As a project:** clone the repo and open it as your working directory. Claude Code reads `.claude/skills/`, and Codex/Cursor/Windsurf read `AGENTS.md` natively. `AGENTS.md` ships alongside, so every agent's entry point can defer to it.
+**As a project (non-Claude agents):** clone the repo and open it as your working directory. Codex, Cursor, and Windsurf read `AGENTS.md` natively, and their command files (`.codex/`, `.cursor/`, `.gemini/`) defer to it. (For Claude Code, install the plugin or the global skill below — it discovers skills from `skills/` only when installed, not from an arbitrary working directory.)
 
-**As a global Claude Code skill:** copy `skills/eli5/` **and** `AGENTS.md` into `~/.claude/skills/` and `~/.claude/` respectively (the skill reads `AGENTS.md`).
+**As a global Claude Code skill:** copy `skills/eli5/` **and** `AGENTS.md` into `~/.claude/skills/` and `~/.claude/skills/eli5/` respectively (the skill reads the `AGENTS.md` in its own base directory).

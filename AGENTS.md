@@ -428,8 +428,7 @@ GEMINI.md                       — symlink → AGENTS.md (Gemini CLI)
 .github/copilot-instructions.md — symlink → AGENTS.md (GitHub Copilot)
 .claude-plugin/plugin.json      — Claude Code plugin manifest
 .claude-plugin/marketplace.json — Claude Code marketplace entry
-skills/eli5/SKILL.md            — Claude Code skill (plugin install; defers here)
-.claude/skills/eli5/SKILL.md    — symlink → skills/eli5/SKILL.md (project mode)
+skills/eli5/SKILL.md            — Claude Code skill (invoked as /eli5; defers here)
 .codex/prompts/eli5.md          — Codex prompt
 .gemini/commands/eli5.toml      — Gemini CLI command
 .cursor/commands/eli5.md        — Cursor command
@@ -437,6 +436,6 @@ library/                        — saved explanations vault
 library/courses/                — saved course guides
 ```
 
-> **Why both `skills/` and `.claude/skills/`:** when installed as a plugin, Claude Code discovers
-> skills from `skills/` at the plugin root; when this repo is your working directory, it reads
-> `.claude/skills/`. The latter is a symlink to the former, so there is one real skill file.
+> **Plugin layout:** Claude Code discovers the skill from `skills/` at the plugin root — the canonical
+> location. No `.claude/` directory ships in the plugin (the plugin loader ignores it). To use eli5 in
+> Claude Code without installing the plugin, copy `skills/eli5/` (and `AGENTS.md`) into `~/.claude/skills/`.

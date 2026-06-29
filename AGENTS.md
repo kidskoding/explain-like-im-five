@@ -94,7 +94,7 @@ The ELI5 tone applies throughout — not just the opening analogy. Every concept
 
 ### Saving the module explanation
 
-First ask the user whether to save: `Save this? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
+Then run the **[Saving notes](#saving-notes)** flow — it offers to save, improve, or skip (Step 1), then asks where/what format if saving. Skip straight to saving only when the user already asked you to save in their invocation.
 
 Determine slugs for both the cert and the module. Lowercase, hyphenated, drop standalone filler words (how, why, what, is, the, a).
 
@@ -114,7 +114,6 @@ tags: [<inferred tags>]
 <the full explanation, verbatim>
 ```
 
-Then follow **[Saving notes](#saving-notes)** for destination and format.
 
 ---
 
@@ -147,7 +146,7 @@ Close with 2–3 explicit connections: "Now that you understand X, you can also 
 
 ### Saving the explanation
 
-First ask the user whether to save: `Save this? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
+Then run the **[Saving notes](#saving-notes)** flow — it offers to save, improve, or skip (Step 1), then asks where/what format if saving. Skip straight to saving only when the user already asked you to save in their invocation.
 
 Determine the slug: lowercase, hyphenated, remove standalone filler words (how, why, what, is, the, a).
 - "TCP handshake" → `tcp-handshake`
@@ -169,7 +168,6 @@ tags: [<comma-separated inferred tags>]
 <the full explanation, verbatim>
 ```
 
-Then follow **[Saving notes](#saving-notes)** for destination and format.
 
 ---
 
@@ -216,7 +214,7 @@ If official weights are unknown, mark as approximate or omit.
 
 ### Saving the study guide
 
-First ask the user whether to save: `Save this? (y/n)`. Only proceed if they say yes; if no, stop here. Skip the prompt only when the user already asked you to save in their invocation.
+Then run the **[Saving notes](#saving-notes)** flow — it offers to save, improve, or skip (Step 1), then asks where/what format if saving. Skip straight to saving only when the user already asked you to save in their invocation.
 
 Slug from cert name: lowercase, hyphenated, drop standalone filler words.
 
@@ -234,17 +232,40 @@ tags: [<comma-separated inferred tags>]
 <the full study guide, verbatim>
 ```
 
-Then follow **[Saving notes](#saving-notes)** for destination and format.
 
 ---
 
 ## Saving notes
 
 Every mode that produces an explanation can save it. Each mode's "Saving the …" subsection defines
-the **slug**, **frontmatter**, and **default relative path** (e.g. `library/<slug>.md`). After the user
-opts in to saving, run this destination flow to decide *where* and in *what format*.
+the **slug**, **frontmatter**, and **default relative path** (e.g. `library/<slug>.md`). After the
+explanation, run this flow to decide whether to save, improve, or skip — and if saving, *where* and in
+*what format*.
 
-### Step 1 — Pick destination & format
+### Step 1 — Save, improve, or skip
+
+After presenting the explanation, ask **once** using your agent's **native interactive multiple-choice
+prompt** (in Claude Code, the `AskUserQuestion` tool). One question, header `Next`, options:
+
+| Option label | What it does |
+|---|---|
+| `Save it (Recommended)` | go to Step 2 to pick a destination |
+| `Improve it` | revise the explanation, then return here |
+| `No, I'm done` | stop — do not save |
+
+If the user already said to save (or not to) in their invocation, skip this prompt and honor it.
+
+**On `Improve it`:** ask what they'd like changed via a quick follow-up (e.g. "What should I improve? —
+simpler analogy / more depth / add code / shorter / focus on X"). Use the picker with those as options
+plus the "Other" free-text escape for specifics. Apply the revision, re-print the explanation, then
+return to Step 1 (they can refine again, save the improved version, or finish). Loop as many times as
+they want.
+
+**On `No, I'm done`:** stop here. Nothing is written.
+
+**On `Save it`:** continue to Step 2.
+
+### Step 2 — Pick destination & format
 
 If the user already named a destination or format in their request ("save to Word", "put it in Notion",
 "save to ~/notes"), skip the prompt and honor it.
@@ -265,16 +286,16 @@ The picker always offers its own "Other" / free-text escape — the user types a
 Treat that free-text answer as a custom directory.
 
 Route the answer:
-- **`This folder`** (also the default if the user dismisses without choosing) → markdown, current dir (Step 2)
-- **`~/.claude/eli5-notes/`** → markdown there (Step 2)
-- **custom path** (via "Other") → markdown there (Step 2)
-- **`Microsoft Word (.docx)`** → Word document (Step 3)
+- **`This folder`** (also the default if the user dismisses without choosing) → markdown, current dir (Step 3)
+- **`~/.claude/eli5-notes/`** → markdown there (Step 3)
+- **custom path** (via "Other") → markdown there (Step 3)
+- **`Microsoft Word (.docx)`** → Word document (Step 4)
 - **`Notion`** → see the Notion Integration section below
 
 > If your agent has no structured-choice tool, fall back to a plain numbered text prompt and default to
 > the current folder on a blank answer.
 
-### Step 2 — Markdown file
+### Step 3 — Markdown file
 
 Resolve the base directory from the chosen option:
 - `This folder` → current working directory (`.`)
@@ -284,7 +305,7 @@ Resolve the base directory from the chosen option:
 Write the markdown (frontmatter + explanation) to `<base>/<default-relative-path>`, creating any
 missing directories. Confirm with one line: `Saved to <full path>`.
 
-### Step 3 — Word document (.docx)
+### Step 4 — Word document (.docx)
 
 Ask which folder to save into if not already known — default to the current folder.
 Build the `.docx` from the same content (the frontmatter becomes a plain metadata block at the top of
@@ -295,7 +316,7 @@ the document, not raw YAML), named `<slug>.docx`:
 2. Else if Python with `python-docx` is available, build the document programmatically (headings,
    paragraphs, tables from the markdown).
 3. Else tell the user neither `pandoc` nor `python-docx` is installed, and offer to install one or fall
-   back to saving markdown (Step 2).
+   back to saving markdown (Step 3).
 
 Confirm with one line: `Saved to <base>/<slug>.docx`.
 
